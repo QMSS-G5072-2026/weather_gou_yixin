@@ -12,39 +12,72 @@ def celsius_to_fahrenheit(celsius: float) -> float:
     """
     Convert a temperature from degrees Celsius to degrees Fahrenheit.
 
-    Args:
-        celsius: Temperature in degrees Celsius.
+    Parameters
+    ----------
+    celsius : float
+        Temperature in degrees Celsius.
 
-    Returns:
+    Returns
+    -------
+    float
         Temperature in degrees Fahrenheit.
 
-    Raises:
-        TypeError: If `celsius` is not an int or a float.
-        ValueError: If `celsius` is below absolute zero (-273.15 C).
+    Raises
+    ------
+    TypeError
+        If `celsius` is not an int or a float.
+    ValueError
+        If `celsius` is below absolute zero (-273.15 C).
+
+    Examples
+    --------
+    >>> import weather_yg3087
+    >>> weather_yg3087.celsius_to_fahrenheit(0)
+    32.0
+    >>> weather_yg3087.celsius_to_fahrenheit(37)
+    98.6
     """
     if isinstance(celsius, bool) or not isinstance(celsius, (int, float)):
         raise TypeError("celsius must be a number")
+
     if celsius < ABSOLUTE_ZERO_C:
         raise ValueError("temperature cannot be below absolute zero")
+
     return celsius * 9 / 5 + 32
 
 
 def summarize_temperatures(temps: list[float]) -> dict[str, float]:
     """
-    Summarize a list of temperature readings, ignoring missing values (NaN).
+    Summarize temperature readings while ignoring missing values.
 
-    Args:
-        temps: Temperature readings. Missing readings are stored as float("nan").
+    Parameters
+    ----------
+    temps : list of float
+        Temperature readings. Missing readings are stored as float("nan").
 
-    Returns:
+    Returns
+    -------
+    dict
         A dictionary with the keys "mean", "min", "max", and "n_missing".
 
-    Raises:
-        ValueError: If there are no valid (non-missing) readings.
+    Raises
+    ------
+    ValueError
+        If there are no valid temperature readings.
+
+    Examples
+    --------
+    >>> import weather_yg3087
+    >>> weather_yg3087.summarize_temperatures(
+    ...     [10.0, float("nan"), 20.0]
+    ... )
+    {'mean': 15.0, 'min': 10.0, 'max': 20.0, 'n_missing': 1}
     """
     valid = [t for t in temps if not math.isnan(t)]
+
     if not valid:
         raise ValueError("no valid temperature readings")
+
     return {
         "mean": sum(valid) / len(valid),
         "min": min(valid),
@@ -55,22 +88,39 @@ def summarize_temperatures(temps: list[float]) -> dict[str, float]:
 
 def clean_readings(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Clean raw station readings.
+    Clean raw weather station readings.
 
-    Steps:
-        1. Drop rows where `temp_c` is missing.
-        2. Drop physically implausible readings outside -90 C to 60 C.
-        3. Add a `temp_f` column.
-        4. Sort by `station`, then `date`, and reset the index.
+    The function removes missing and implausible temperatures,
+    converts Celsius values to Fahrenheit, and sorts the result.
 
-    Args:
-        df: DataFrame with the columns `station`, `date`, and `temp_c`.
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame containing the columns `station`, `date`, and `temp_c`.
 
-    Returns:
-        A new, cleaned DataFrame.
+    Returns
+    -------
+    pandas.DataFrame
+        A new cleaned DataFrame containing the original columns plus
+        `temp_f`, sorted by `station` and `date` with a reset index.
+
+    Notes
+    -----
+    Temperature readings below -90 C or above 60 C are treated as
+    physically implausible and removed. The boundary values -90 C
+    and 60 C are retained.
     """
     cleaned = df.dropna(subset=["temp_c"])
-    in_range = cleaned["temp_c"].between(MIN_PLAUSIBLE_C, MAX_PLAUSIBLE_C)
+
+    in_range = cleaned["temp_c"].between(
+        MIN_PLAUSIBLE_C,
+        MAX_PLAUSIBLE_C,
+    )
+
     cleaned = cleaned[in_range].copy()
+
     cleaned["temp_f"] = cleaned["temp_c"] * 9 / 5 + 32
-    return cleaned.sort_values(["station", "date"]).reset_index(drop=True)
+
+    return cleaned.sort_values(
+        ["station", "date"]
+    ).reset_index(drop=True)
