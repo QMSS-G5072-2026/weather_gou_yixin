@@ -1,4 +1,6 @@
 # weather_yg3087
+[![CI](https://github.com/QMSS-G5072-2026/weather_gou_yixin/actions/workflows/ci.yml/badge.svg)](https://github.com/QMSS-G5072-2026/weather_gou_yixin/actions/workflows/ci.yml)
+
 
 Utilities for processing weather station data
 
