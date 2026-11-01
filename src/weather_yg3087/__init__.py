@@ -1,3 +1,7 @@
-# read version from installed package
-from importlib.metadata import version
-__version__ = version("weather_yg3087")
+from .weather_yg3087 import (
+    celsius_to_fahrenheit,
+    summarize_temperatures,
+    clean_readings,
+)
+
+__version__ = "0.1.0"
